@@ -1,0 +1,17 @@
+{
+  "version": 0,
+  "routes": {
+    "chore": {
+      "mode": "command",
+      "command": "node",
+      "args": ["scripts/write-note.mjs"]
+    }
+  },
+  "gates": [
+    {
+      "name": "note-exists",
+      "command": "node",
+      "args": ["scripts/assert-note.mjs"]
+    }
+  ]
+}

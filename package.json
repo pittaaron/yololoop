@@ -1,0 +1,32 @@
+{
+  "name": "yololoop",
+  "version": "0.0.0",
+  "description": "Auditable local AI development loops that turn backlog items into gated pull-request-ready changes.",
+  "type": "module",
+  "bin": {
+    "yololoop": "./bin/yololoop.js"
+  },
+  "scripts": {
+    "check": "node --check bin/yololoop.js && node --check src/*.js && node --test",
+    "test": "node --test"
+  },
+  "keywords": [
+    "ai-agents",
+    "developer-tools",
+    "codex",
+    "claude-code",
+    "automation",
+    "devtools"
+  ],
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "bin/",
+    "src/",
+    "templates/",
+    "README.md",
+    "LICENSE"
+  ]
+}

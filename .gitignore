@@ -1,0 +1,6 @@
+.yololoop/
+node_modules/
+.env
+.env.*
+coverage/
+dist/
