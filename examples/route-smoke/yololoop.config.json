@@ -1,0 +1,17 @@
+{
+  "version": 0,
+  "routes": {
+    "chore": {
+      "mode": "command",
+      "command": "node",
+      "args": ["scripts/fake-agent.mjs"]
+    }
+  },
+  "gates": [
+    {
+      "name": "route-output",
+      "command": "node",
+      "args": ["scripts/assert-route-output.mjs"]
+    }
+  ]
+}

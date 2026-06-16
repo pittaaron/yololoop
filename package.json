@@ -23,9 +23,12 @@
     "node": ">=22"
   },
   "files": [
+    ".agents/",
+    ".claude/",
     "bin/",
+    "docs/",
+    "examples/",
     "src/",
-    "templates/",
     "README.md",
     "LICENSE"
   ]

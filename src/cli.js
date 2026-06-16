@@ -4,6 +4,7 @@ import { runDoctor } from "./doctor.js";
 import { createPlan, writePlan } from "./plan.js";
 import { runOnce } from "./run.js";
 import { getStatus } from "./status.js";
+import { createPullRequest } from "./pr.js";
 import { UserError } from "./errors.js";
 
 const helpText = `yololoop
@@ -13,6 +14,7 @@ Usage:
   yololoop doctor [--cwd <path>]
   yololoop plan [--json] [--no-branch] [--cwd <path>]
   yololoop run --once [--no-branch] [--cwd <path>]
+  yololoop pr [--dry-run] [--draft] [--base <branch>] [--cwd <path>]
   yololoop status [--json] [--cwd <path>]
 
 Commands:
@@ -20,6 +22,7 @@ Commands:
   doctor    Check local tools and required project files.
   plan      Preview the next loop step and write a plan artifact.
   run       Execute one configured loop step.
+  pr        Create a GitHub pull request from the latest passed run.
   status    Show queue and latest artifact status.
 `;
 
@@ -43,6 +46,12 @@ export async function main(argv) {
         throw new UserError("run currently requires --once");
       }
       return printRun(await runOnce(cwd, { branch: !flags.noBranch }));
+    case "pr":
+      return printPullRequest(await createPullRequest(cwd, {
+        dryRun: flags.dryRun,
+        draft: flags.draft,
+        base: flags.base
+      }));
     case "status":
       return printStatus(await getStatus(cwd), flags);
     default:
@@ -56,7 +65,10 @@ function parseArgs(argv) {
     help: false,
     json: false,
     noBranch: false,
-    once: false
+    once: false,
+    dryRun: false,
+    draft: false,
+    base: "main"
   };
   let cwd = process.cwd();
   let command = null;
@@ -73,6 +85,17 @@ function parseArgs(argv) {
       flags.noBranch = true;
     } else if (arg === "--once") {
       flags.once = true;
+    } else if (arg === "--dry-run") {
+      flags.dryRun = true;
+    } else if (arg === "--draft") {
+      flags.draft = true;
+    } else if (arg === "--base") {
+      const value = argv[index + 1];
+      if (!value) {
+        throw new UserError("--base requires a branch name");
+      }
+      flags.base = value;
+      index += 1;
     } else if (arg === "--cwd") {
       const value = argv[index + 1];
       if (!value) {
@@ -140,6 +163,19 @@ async function printPlan(cwd, plan, flags) {
 function printRun(run) {
   console.log(`${run.status}: ${run.item?.title ?? "no backlog item"}`);
   console.log(`wrote ${run.path}`);
+}
+
+function printPullRequest(result) {
+  if (result.dryRun) {
+    console.log(`dry-run: ${result.command.join(" ")}`);
+    console.log(`title: ${result.title}`);
+    console.log(`head: ${result.head}`);
+    console.log(`base: ${result.base}`);
+    return;
+  }
+
+  console.log("created pull request");
+  console.log(result.url);
 }
 
 function printStatus(status, flags) {

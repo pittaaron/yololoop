@@ -15,7 +15,7 @@ export async function getStatus(cwd) {
   };
 }
 
-async function readLatestJson(cwd, relativeDir) {
+export async function readLatestJson(cwd, relativeDir) {
   const absoluteDir = path.join(cwd, relativeDir);
   let entries;
 
