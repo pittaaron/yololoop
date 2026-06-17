@@ -20,6 +20,8 @@ Hosted runners, billing, auth, managed environments, and the full yololoop.com U
 
 ## Quick Start
 
+Prerequisite: Node.js 22 or newer.
+
 Install from GitHub until the first npm package is published:
 
 ```bash
