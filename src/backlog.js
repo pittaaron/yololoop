@@ -66,6 +66,10 @@ export async function markItemDone(cwd, item) {
     throw new UserError(`cannot mark item done; line ${item.lineIndex + 1} is missing`);
   }
 
+  if (/\[[xX]\]/.test(line)) {
+    return;
+  }
+
   const nextLine = line.replace(/\[\s\]/, "[x]");
   if (nextLine === line) {
     throw new UserError(`cannot mark item done; line ${item.lineIndex + 1} is not unchecked`);
