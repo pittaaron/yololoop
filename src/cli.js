@@ -14,8 +14,8 @@ Usage:
   yololoop init [--force] [--cwd <path>]
   yololoop doctor [--cwd <path>]
   yololoop plan [--json] [--branch <name>] [--no-branch] [--cwd <path>]
-  yololoop run --once [--commit] [--branch <name>] [--no-branch] [--cwd <path>]
-  yololoop loop [--max <n>] [--commit] [--branch <name>] [--no-branch] [--cwd <path>]
+  yololoop run --once [--commit] [--timeout <seconds>] [--branch <name>] [--no-branch] [--cwd <path>]
+  yololoop loop [--max <n>] [--sleep <seconds>] [--max-runtime <seconds>] [--timeout <seconds>] [--commit] [--branch <name>] [--no-branch] [--cwd <path>]
   yololoop pr [--dry-run] [--draft] [--base <branch>] [--cwd <path>]
   yololoop status [--json] [--cwd <path>]
 
@@ -54,14 +54,20 @@ export async function main(argv) {
       return printRun(await runOnce(cwd, {
         branch: !flags.noBranch,
         branchName: flags.branchName,
-        commit: flags.commit
+        commit: flags.commit,
+        timeoutSeconds: flags.timeoutSeconds,
+        stream: true
       }));
     case "loop":
       return printLoop(await runLoop(cwd, {
         max: flags.max,
+        sleepSeconds: flags.sleepSeconds,
+        maxRuntimeSeconds: flags.maxRuntimeSeconds,
+        timeoutSeconds: flags.timeoutSeconds,
         branch: !flags.noBranch,
         branchName: flags.branchName,
-        commit: flags.commit
+        commit: flags.commit,
+        stream: true
       }));
     case "pr":
       return printPullRequest(await createPullRequest(cwd, {
@@ -88,6 +94,9 @@ function parseArgs(argv) {
     commit: false,
     base: "main",
     max: 1,
+    sleepSeconds: undefined,
+    maxRuntimeSeconds: undefined,
+    timeoutSeconds: undefined,
     branchName: null
   };
   let cwd = process.cwd();
@@ -131,6 +140,27 @@ function parseArgs(argv) {
         throw new UserError("--max requires a positive integer");
       }
       flags.max = value;
+      index += 1;
+    } else if (arg === "--sleep") {
+      const value = Number.parseInt(argv[index + 1], 10);
+      if (!Number.isInteger(value) || value < 0) {
+        throw new UserError("--sleep requires a non-negative integer");
+      }
+      flags.sleepSeconds = value;
+      index += 1;
+    } else if (arg === "--max-runtime") {
+      const value = Number.parseInt(argv[index + 1], 10);
+      if (!Number.isInteger(value) || value < 0) {
+        throw new UserError("--max-runtime requires a non-negative integer");
+      }
+      flags.maxRuntimeSeconds = value;
+      index += 1;
+    } else if (arg === "--timeout") {
+      const value = Number.parseInt(argv[index + 1], 10);
+      if (!Number.isInteger(value) || value < 1) {
+        throw new UserError("--timeout requires a positive integer");
+      }
+      flags.timeoutSeconds = value;
       index += 1;
     } else if (arg === "--cwd") {
       const value = argv[index + 1];

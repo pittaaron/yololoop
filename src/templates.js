@@ -12,6 +12,7 @@ Before editing code:
 - Keep changes scoped.
 - Run the configured gates before marking work done.
 - Do not commit secrets, local run state, or model logs.
+- Treat .yololoop/ as generated runtime state.
 `,
   "PROJECT.md": `# Project Context
 
@@ -24,10 +25,6 @@ Keep this file durable. Agents should be able to read it and make better impleme
 ## Ready
 
 - [ ] chore: replace this starter item with one small, testable task
-`,
-  "INBOX.md": `# Inbox
-
-Raw ideas go here before they become executable BACKLOG.md items.
 `,
   ".agents/skills/yololoop-loop/SKILL.md": `---
 name: yololoop-loop

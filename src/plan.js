@@ -64,9 +64,20 @@ function redactRoute(route) {
     };
   }
 
+  if (route.mode === "model") {
+    return {
+      mode: "model",
+      runner: route.runner,
+      model: route.model,
+      args: route.args ?? [],
+      timeoutSeconds: route.timeoutSeconds
+    };
+  }
+
   return {
     mode: "command",
     command: route.command,
-    args: route.args ?? []
+    args: route.args ?? [],
+    timeoutSeconds: route.timeoutSeconds
   };
 }

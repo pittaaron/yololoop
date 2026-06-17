@@ -19,6 +19,14 @@
     "devtools"
   ],
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pittaaron/yololoop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pittaaron/yololoop/issues"
+  },
+  "homepage": "https://github.com/pittaaron/yololoop#readme",
   "engines": {
     "node": ">=22"
   },
@@ -29,7 +37,12 @@
     "docs/",
     "examples/",
     "src/",
+    "CHANGELOG.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "SECURITY.md",
+    "SUPPORT.md"
   ]
 }

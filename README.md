@@ -6,13 +6,14 @@ yololoop is not another coding model. It is a small local control loop around th
 
 ## Status
 
-This is an initial OSS core pass. The CLI is functional, but the public contract is still small:
+This is an initial OSS core pass extracted from the local loop that runs the yololoop project itself. The public contract is intentionally small:
 
 - `yololoop init`
 - `yololoop doctor`
 - `yololoop plan`
 - `yololoop run --once`
 - `yololoop loop --max <n>`
+- `yololoop pr --dry-run`
 - `yololoop status`
 
 Hosted runners, billing, auth, managed environments, and the full yololoop.com UI are not part of this repo yet.
@@ -40,18 +41,28 @@ yololoop run --once --commit
 Run a bounded loop:
 
 ```bash
-yololoop loop --max 10 --commit --branch yololoop/run
+yololoop loop --max 10 --sleep 8 --max-runtime 14400 --timeout 900 --commit --branch yololoop/run
 ```
 
-The loop stops when the backlog is empty, a route fails, or a gate fails. With `--commit`, each passed item is committed on its branch after the backlog item is checked off.
+The loop stops when the backlog is empty, a route fails, a gate fails, `--max` is reached, or `--max-runtime` is reached. With `--commit`, each passed item is committed on its branch after the backlog item is checked off.
+
+Every live run writes:
+
+- `.yololoop/runs/run-*.json` for the full run artifact
+- `.yololoop/runs/<run-id>/blocks.jsonl` for per-route and per-gate execution records
 
 ## Configure A Route
 
-`yololoop.config.json` maps backlog item classes to command routes.
+`yololoop.config.json` maps backlog item classes to routes. Command routes are the lowest-level primitive.
 
 ```json
 {
   "version": 0,
+  "runtime": {
+    "defaultTimeoutSeconds": 900,
+    "sleepSeconds": 0,
+    "maxRuntimeSeconds": 0
+  },
   "routes": {
     "chore": {
       "mode": "command",
@@ -72,6 +83,35 @@ The loop stops when the backlog is empty, a route fails, or a gate fails. With `
 }
 ```
 
+Model routes are a small convenience over command routes. They resolve model aliases and build the provider command for Codex or Claude Code.
+
+```json
+{
+  "version": 0,
+  "models": {
+    "worker": "gpt-5.4-mini",
+    "reviewer": "claude-opus-4-8"
+  },
+  "routes": {
+    "chore": {
+      "mode": "model",
+      "runner": "codex",
+      "model": "worker",
+      "timeoutSeconds": 900,
+      "args": ["--ephemeral", "-c", "approval_policy=\"never\""],
+      "prompt": "Work only on {{title}}. Keep changes scoped and run the configured gates."
+    }
+  },
+  "gates": [
+    {
+      "name": "tests",
+      "command": "npm",
+      "args": ["test", "--if-present"]
+    }
+  ]
+}
+```
+
 When a route command runs, yololoop provides these environment variables:
 
 - `YOLOLOOP_ITEM_TITLE`
@@ -79,6 +119,8 @@ When a route command runs, yololoop provides these environment variables:
 - `YOLOLOOP_ITEM_SLUG`
 - `YOLOLOOP_BRANCH`
 - `YOLOLOOP_REPO`
+- `YOLOLOOP_RUN_ID`
+- `YOLOLOOP_MODEL`
 
 ## Backlog Format
 

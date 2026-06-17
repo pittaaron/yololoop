@@ -23,14 +23,17 @@ export function checkoutBranch(cwd, branchName) {
     return { changed: false, branchName };
   }
 
-  const exists = spawnSync("git", ["rev-parse", "--verify", branchName], {
-    cwd,
-    encoding: "utf8"
-  });
-
-  const args = exists.status === 0
-    ? ["checkout", branchName]
-    : ["checkout", "-b", branchName];
+  let args;
+  if (gitRefExists(cwd, branchName)) {
+    args = ["checkout", branchName];
+  } else if (gitRefExists(cwd, `origin/${branchName}`)) {
+    args = ["checkout", "-b", branchName, `origin/${branchName}`];
+  } else if (gitRefExists(cwd, "origin/main")) {
+    runGit(cwd, ["fetch", "--quiet", "origin", "main"], { allowFailure: true });
+    args = ["checkout", "-b", branchName, "origin/main"];
+  } else {
+    args = ["checkout", "-b", branchName];
+  }
 
   const result = spawnSync("git", args, {
     cwd,
@@ -54,20 +57,42 @@ export function commitAll(cwd, message) {
   }
 
   runGit(cwd, ["add", "--all"]);
+  runGit(cwd, ["reset", "--quiet", "--", ".yololoop"], { allowFailure: true });
+  if (!hasStagedChanges(cwd)) {
+    return { committed: false, sha: null };
+  }
+
   runGit(cwd, ["commit", "-m", message]);
   const sha = runGit(cwd, ["rev-parse", "HEAD"]).stdout.trim();
   return { committed: true, sha };
 }
 
-export function runGit(cwd, args) {
+export function runGit(cwd, args, options = {}) {
   const result = spawnSync("git", args, {
     cwd,
     encoding: "utf8"
   });
 
   if (result.status !== 0) {
+    if (options.allowFailure) {
+      return result;
+    }
     throw new UserError(`git ${args.join(" ")} failed: ${result.stderr.trim() || result.stdout.trim()}`);
   }
 
   return result;
+}
+
+function gitRefExists(cwd, ref) {
+  return spawnSync("git", ["rev-parse", "--verify", ref], {
+    cwd,
+    encoding: "utf8"
+  }).status === 0;
+}
+
+function hasStagedChanges(cwd) {
+  return spawnSync("git", ["diff", "--cached", "--quiet"], {
+    cwd,
+    encoding: "utf8"
+  }).status === 1;
 }
