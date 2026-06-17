@@ -20,14 +20,22 @@ Hosted runners, billing, auth, managed environments, and the full yololoop.com U
 
 ## Quick Start
 
+Install from GitHub until the first npm package is published:
+
 ```bash
-npm install -g yololoop
+npm install -g github:pittaaron/yololoop
 mkdir my-agent-loop
 cd my-agent-loop
 git init
 yololoop init
 yololoop doctor
 yololoop plan
+```
+
+After the first npm release, the install command will be:
+
+```bash
+npm install -g yololoop
 ```
 
 `plan` is safe: it writes a JSON artifact under `.yololoop/plans/` and prints the side effects a live run would perform.
@@ -111,6 +119,8 @@ Model routes are a small convenience over command routes. They resolve model ali
   ]
 }
 ```
+
+Replace the model IDs with models available to your local `codex` or `claude` CLI account.
 
 When a route command runs, yololoop provides these environment variables:
 
