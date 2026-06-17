@@ -3,7 +3,7 @@ import { readConfig } from "./config.js";
 import { markItemDone } from "./backlog.js";
 import { ensureDir, writeJson } from "./fs-utils.js";
 import { createPlan } from "./plan.js";
-import { ensureGitRepo, checkoutBranch } from "./git.js";
+import { ensureGitRepo, checkoutBranch, commitAll } from "./git.js";
 import { UserError } from "./errors.js";
 
 export async function runOnce(cwd, options = {}) {
@@ -44,11 +44,12 @@ export async function runOnce(cwd, options = {}) {
     : [];
 
   const ok = commandResult.ok && gateResults.every((gate) => gate.ok);
-  const run = await writeRun(cwd, {
+  let run = await writeRun(cwd, {
     ...baseRun(plan),
     status: ok ? "passed" : "failed",
     command: commandResult,
-    gates: gateResults
+    gates: gateResults,
+    commit: null
   });
 
   if (!ok) {
@@ -56,6 +57,15 @@ export async function runOnce(cwd, options = {}) {
   }
 
   await markItemDone(cwd, plan.item);
+
+  if (options.commit && plan.branch.enabled) {
+    const commit = commitAll(cwd, `yololoop: ${plan.item.title}`);
+    run = await writeRun(cwd, {
+      ...run,
+      commit
+    });
+  }
+
   return run;
 }
 
@@ -103,7 +113,8 @@ function baseRun(plan) {
 async function writeRun(cwd, run) {
   await ensureDir(cwd, ".yololoop/runs");
   const stamp = run.createdAt.replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
-  const relativePath = `.yololoop/runs/run-${stamp}.json`;
+  const suffix = run.commit ? "-final" : "";
+  const relativePath = `.yololoop/runs/run-${stamp}${suffix}.json`;
   const nextRun = { ...run, path: relativePath };
   await writeJson(cwd, relativePath, nextRun);
   return nextRun;

@@ -11,6 +11,8 @@ The first public release should prove one thing:
 - Markdown backlog parsing.
 - Dry-run plan artifacts.
 - One live run at a time.
+- Bounded loops with `yololoop loop --max <n>`.
+- Branch-backed commits for passed items with `--commit`.
 - Command routes that call existing tools.
 - Gate commands.
 - Local run artifacts.
@@ -26,6 +28,30 @@ The first public release should prove one thing:
 - Background schedules.
 - Workflow graph editor.
 - Full autonomous repo manager.
+
+## Block Graph Direction
+
+The current primitive composes command routes and gates. The next abstraction should be a block graph built from the same pieces:
+
+```json
+{
+  "blocks": [
+    { "id": "apply", "type": "route", "route": "codex" },
+    { "id": "test", "type": "gate", "command": "pytest", "args": ["-q"] },
+    { "id": "review", "type": "route", "route": "claude-review" },
+    { "id": "fix", "type": "route", "route": "codex-fix", "when": "review.failed" },
+    { "id": "pr", "type": "pr", "when": "gates.passed" }
+  ]
+}
+```
+
+Rules for the first graph implementation:
+
+- Keep routes as command adapters; do not hardcode provider APIs.
+- Make each block write an artifact.
+- Pass only structured outputs between blocks.
+- Start with a linear graph before fanout/fanin.
+- Let `loop --max` execute one graph per backlog item.
 
 ## Commercial Boundary
 

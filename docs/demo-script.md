@@ -46,6 +46,16 @@ node ../../bin/yololoop.js status
 
 Expected point: the fake agent received the selected backlog item through `YOLOLOOP_*` variables, the backlog item is checked off, and the latest run status is `passed`.
 
+## Run As A Loop
+
+Reset the fixture, then run:
+
+```bash
+node ../../bin/yololoop.js loop --max 3 --no-branch
+```
+
+Expected point: yololoop runs the one available item and then stops when the backlog is empty.
+
 ## Show PR-Ready Path
 
 For the public demo, explain that real PR creation uses branch mode and GitHub CLI:

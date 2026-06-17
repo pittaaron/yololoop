@@ -3,6 +3,7 @@ import { initProject } from "./init.js";
 import { runDoctor } from "./doctor.js";
 import { createPlan, writePlan } from "./plan.js";
 import { runOnce } from "./run.js";
+import { runLoop } from "./loop.js";
 import { getStatus } from "./status.js";
 import { createPullRequest } from "./pr.js";
 import { UserError } from "./errors.js";
@@ -13,7 +14,8 @@ Usage:
   yololoop init [--force] [--cwd <path>]
   yololoop doctor [--cwd <path>]
   yololoop plan [--json] [--no-branch] [--cwd <path>]
-  yololoop run --once [--no-branch] [--cwd <path>]
+  yololoop run --once [--commit] [--no-branch] [--cwd <path>]
+  yololoop loop [--max <n>] [--commit] [--no-branch] [--cwd <path>]
   yololoop pr [--dry-run] [--draft] [--base <branch>] [--cwd <path>]
   yololoop status [--json] [--cwd <path>]
 
@@ -22,6 +24,7 @@ Commands:
   doctor    Check local tools and required project files.
   plan      Preview the next loop step and write a plan artifact.
   run       Execute one configured loop step.
+  loop      Execute repeated loop steps until max, failure, or empty backlog.
   pr        Create a GitHub pull request from the latest passed run.
   status    Show queue and latest artifact status.
 `;
@@ -45,7 +48,13 @@ export async function main(argv) {
       if (!flags.once) {
         throw new UserError("run currently requires --once");
       }
-      return printRun(await runOnce(cwd, { branch: !flags.noBranch }));
+      return printRun(await runOnce(cwd, { branch: !flags.noBranch, commit: flags.commit }));
+    case "loop":
+      return printLoop(await runLoop(cwd, {
+        max: flags.max,
+        branch: !flags.noBranch,
+        commit: flags.commit
+      }));
     case "pr":
       return printPullRequest(await createPullRequest(cwd, {
         dryRun: flags.dryRun,
@@ -68,7 +77,9 @@ function parseArgs(argv) {
     once: false,
     dryRun: false,
     draft: false,
-    base: "main"
+    commit: false,
+    base: "main",
+    max: 1
   };
   let cwd = process.cwd();
   let command = null;
@@ -89,12 +100,21 @@ function parseArgs(argv) {
       flags.dryRun = true;
     } else if (arg === "--draft") {
       flags.draft = true;
+    } else if (arg === "--commit") {
+      flags.commit = true;
     } else if (arg === "--base") {
       const value = argv[index + 1];
       if (!value) {
         throw new UserError("--base requires a branch name");
       }
       flags.base = value;
+      index += 1;
+    } else if (arg === "--max") {
+      const value = Number.parseInt(argv[index + 1], 10);
+      if (!Number.isInteger(value) || value < 1) {
+        throw new UserError("--max requires a positive integer");
+      }
+      flags.max = value;
       index += 1;
     } else if (arg === "--cwd") {
       const value = argv[index + 1];
@@ -162,7 +182,18 @@ async function printPlan(cwd, plan, flags) {
 
 function printRun(run) {
   console.log(`${run.status}: ${run.item?.title ?? "no backlog item"}`);
+  if (run.commit?.committed) {
+    console.log(`commit: ${run.commit.sha}`);
+  }
   console.log(`wrote ${run.path}`);
+}
+
+function printLoop(result) {
+  console.log(`${result.status}: completed ${result.completed}/${result.requested}`);
+  for (const run of result.runs) {
+    const commit = run.commit?.committed ? ` (${run.commit.sha.slice(0, 7)})` : "";
+    console.log(`- ${run.status}: ${run.item?.title ?? "no backlog item"}${commit}`);
+  }
 }
 
 function printPullRequest(result) {

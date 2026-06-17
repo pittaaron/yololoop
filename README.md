@@ -12,6 +12,7 @@ This is an initial OSS core pass. The CLI is functional, but the public contract
 - `yololoop doctor`
 - `yololoop plan`
 - `yololoop run --once`
+- `yololoop loop --max <n>`
 - `yololoop status`
 
 Hosted runners, billing, auth, managed environments, and the full yololoop.com UI are not part of this repo yet.
@@ -29,6 +30,20 @@ yololoop plan
 ```
 
 `plan` is safe: it writes a JSON artifact under `.yololoop/plans/` and prints the side effects a live run would perform.
+
+Run one item:
+
+```bash
+yololoop run --once --commit
+```
+
+Run a bounded loop:
+
+```bash
+yololoop loop --max 10 --commit
+```
+
+The loop stops when the backlog is empty, a route fails, or a gate fails. With `--commit`, each passed item is committed on its branch after the backlog item is checked off.
 
 ## Configure A Route
 
