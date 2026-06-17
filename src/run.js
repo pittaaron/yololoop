@@ -7,7 +7,10 @@ import { ensureGitRepo, checkoutBranch, commitAll } from "./git.js";
 import { UserError } from "./errors.js";
 
 export async function runOnce(cwd, options = {}) {
-  const plan = await createPlan(cwd, { branch: options.branch });
+  const plan = await createPlan(cwd, {
+    branch: options.branch,
+    branchName: options.branchName
+  });
 
   if (plan.status === "empty") {
     return writeRun(cwd, {

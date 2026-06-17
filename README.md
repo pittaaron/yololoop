@@ -40,7 +40,7 @@ yololoop run --once --commit
 Run a bounded loop:
 
 ```bash
-yololoop loop --max 10 --commit
+yololoop loop --max 10 --commit --branch yololoop/run
 ```
 
 The loop stops when the backlog is empty, a route fails, or a gate fails. With `--commit`, each passed item is committed on its branch after the backlog item is checked off.

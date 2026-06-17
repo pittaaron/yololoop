@@ -14,6 +14,7 @@ export async function runLoop(cwd, options = {}) {
     try {
       run = await runOnce(cwd, {
         branch: options.branch,
+        branchName: options.branchName,
         commit: options.commit
       });
     } catch (error) {

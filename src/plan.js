@@ -18,7 +18,7 @@ export async function createPlan(cwd, options = {}) {
   }
 
   const route = config.routes[item.type] ?? config.routes.chore;
-  const branchName = `${item.type}/${item.slug}`;
+  const branchName = options.branchName ?? `${item.type}/${item.slug}`;
   const branchEnabled = options.branch !== false;
 
   return {

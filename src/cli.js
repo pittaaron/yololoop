@@ -13,9 +13,9 @@ const helpText = `yololoop
 Usage:
   yololoop init [--force] [--cwd <path>]
   yololoop doctor [--cwd <path>]
-  yololoop plan [--json] [--no-branch] [--cwd <path>]
-  yololoop run --once [--commit] [--no-branch] [--cwd <path>]
-  yololoop loop [--max <n>] [--commit] [--no-branch] [--cwd <path>]
+  yololoop plan [--json] [--branch <name>] [--no-branch] [--cwd <path>]
+  yololoop run --once [--commit] [--branch <name>] [--no-branch] [--cwd <path>]
+  yololoop loop [--max <n>] [--commit] [--branch <name>] [--no-branch] [--cwd <path>]
   yololoop pr [--dry-run] [--draft] [--base <branch>] [--cwd <path>]
   yololoop status [--json] [--cwd <path>]
 
@@ -43,16 +43,24 @@ export async function main(argv) {
     case "doctor":
       return printDoctor(runDoctor(cwd));
     case "plan":
-      return printPlan(cwd, await createPlan(cwd, { branch: !flags.noBranch }), flags);
+      return printPlan(cwd, await createPlan(cwd, {
+        branch: !flags.noBranch,
+        branchName: flags.branchName
+      }), flags);
     case "run":
       if (!flags.once) {
         throw new UserError("run currently requires --once");
       }
-      return printRun(await runOnce(cwd, { branch: !flags.noBranch, commit: flags.commit }));
+      return printRun(await runOnce(cwd, {
+        branch: !flags.noBranch,
+        branchName: flags.branchName,
+        commit: flags.commit
+      }));
     case "loop":
       return printLoop(await runLoop(cwd, {
         max: flags.max,
         branch: !flags.noBranch,
+        branchName: flags.branchName,
         commit: flags.commit
       }));
     case "pr":
@@ -79,7 +87,8 @@ function parseArgs(argv) {
     draft: false,
     commit: false,
     base: "main",
-    max: 1
+    max: 1,
+    branchName: null
   };
   let cwd = process.cwd();
   let command = null;
@@ -108,6 +117,13 @@ function parseArgs(argv) {
         throw new UserError("--base requires a branch name");
       }
       flags.base = value;
+      index += 1;
+    } else if (arg === "--branch") {
+      const value = argv[index + 1];
+      if (!value) {
+        throw new UserError("--branch requires a branch name");
+      }
+      flags.branchName = value;
       index += 1;
     } else if (arg === "--max") {
       const value = Number.parseInt(argv[index + 1], 10);
