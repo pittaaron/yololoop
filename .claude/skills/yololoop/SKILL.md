@@ -1,9 +1,9 @@
 ---
-name: yololoop-loop
+name: yololoop
 description: Use when operating a yololoop repository from Claude Code: preview loop plans, run one gated backlog item, inspect run artifacts, or configure Claude/Codex command routes.
 ---
 
-# yololoop Loop Operator
+# yololoop
 
 Use this skill when the user asks Claude Code to operate or configure yololoop in the current repository.
 

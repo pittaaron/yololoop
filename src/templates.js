@@ -26,8 +26,8 @@ Keep this file durable. Agents should be able to read it and make better impleme
 
 - [ ] chore: replace this starter item with one small, testable task
 `,
-  ".agents/skills/yololoop-loop/SKILL.md": `---
-name: yololoop-loop
+  ".agents/skills/yololoop/SKILL.md": `---
+name: yololoop
 description: Use when operating a yololoop repository: initialize loop files, preview the next backlog item, run one gated loop step, inspect artifacts, or configure command routes for Codex, Claude, OpenSpec, git, npm, or local scripts.
 ---
 
@@ -65,8 +65,8 @@ Use command routes for existing tools. yololoop sets:
 
 Keep route prompts scoped to the selected item and require the agent to run project gates before exiting.
 `,
-  ".claude/skills/yololoop-loop/SKILL.md": `---
-name: yololoop-loop
+  ".claude/skills/yololoop/SKILL.md": `---
+name: yololoop
 description: Use when operating a yololoop repository from Claude Code: preview loop plans, run one gated backlog item, inspect run artifacts, or configure Claude/Codex command routes.
 ---
 

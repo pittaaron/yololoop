@@ -42,6 +42,21 @@ npm install -g yololoop
 
 `plan` is safe: it writes a JSON artifact under `.yololoop/plans/` and prints the side effects a live run would perform.
 
+## Try It In Two Minutes
+
+The route-smoke fixture uses a local script as the agent route, so it does not require Codex, Claude, or GitHub authentication.
+
+```bash
+git clone https://github.com/pittaaron/yololoop.git
+cd yololoop/examples/route-smoke
+git init
+node ../../bin/yololoop.js plan --no-branch
+node ../../bin/yololoop.js run --once --no-branch
+node ../../bin/yololoop.js status
+```
+
+Expected result: the backlog item is checked off, `ROUTE_OUTPUT.md` records the selected `YOLOLOOP_*` environment values, and `.yololoop/runs/` contains a run artifact. See [the demo transcript](docs/demo-transcript.md) for the exact shape of the output.
+
 Run one item:
 
 ```bash
@@ -164,6 +179,10 @@ git diff
 ```
 
 The demo writes `NOTES.md`, records a run artifact, and checks off the backlog item.
+
+## Assistant Skills
+
+yololoop ships Codex and Claude skill files under `.agents/skills/yololoop/` and `.claude/skills/yololoop/`. The intended assistant-facing handle is `/yololoop`: use it to preview the next item, run one gated loop step, and inspect the resulting artifacts.
 
 ## Design Principles
 

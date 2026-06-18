@@ -1,9 +1,9 @@
 ---
-name: yololoop-loop
+name: yololoop
 description: Use when operating a yololoop repository: initialize loop files, preview the next backlog item, run one gated loop step, inspect artifacts, or configure command routes for Codex, Claude, OpenSpec, git, npm, or local scripts.
 ---
 
-# yololoop Loop Operator
+# yololoop
 
 Use this skill when the user asks to operate or configure yololoop in the current repository.
 

@@ -1,6 +1,6 @@
 {
   "name": "yololoop",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Auditable local AI development loops that turn backlog items into gated pull-request-ready changes.",
   "type": "module",
   "bin": {

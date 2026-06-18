@@ -1,13 +1,13 @@
 # Assistant Skills
 
-yololoop ships assistant-facing skills so agents can operate the loop consistently instead of improvising shell commands.
+yololoop ships assistant-facing skills so agents can operate the loop consistently instead of improvising shell commands. The intended assistant-facing handle is `/yololoop`.
 
 ## Codex
 
 The Codex skill lives at:
 
 ```text
-.agents/skills/yololoop-loop/SKILL.md
+.agents/skills/yololoop/SKILL.md
 ```
 
 Codex treats a skill as a reusable workflow package with instructions, optional scripts, and optional references. Repo-scoped Codex skills are discovered from `.agents/skills` at the current directory or repository root.
@@ -26,7 +26,7 @@ The skill tells Codex to:
 The Claude-facing mirror lives at:
 
 ```text
-.claude/skills/yololoop-loop/SKILL.md
+.claude/skills/yololoop/SKILL.md
 ```
 
 It uses the same workflow and safety rules. If a Claude Code installation expects plugin packaging instead of workspace skill folders, use this file as the skill payload when packaging the plugin.
@@ -41,7 +41,7 @@ Codex route:
   "command": "codex",
   "args": [
     "exec",
-    "Use the yololoop-loop skill. Work only on the selected YOLOLOOP_ITEM_TITLE. Keep changes scoped, run project gates, and exit nonzero if incomplete."
+    "Use /yololoop. Work only on the selected YOLOLOOP_ITEM_TITLE. Keep changes scoped, run project gates, and exit nonzero if incomplete."
   ]
 }
 ```
@@ -54,7 +54,7 @@ Claude route:
   "command": "claude",
   "args": [
     "-p",
-    "Use the yololoop-loop skill. Work only on the selected YOLOLOOP_ITEM_TITLE. Keep changes scoped, run project gates, and exit nonzero if incomplete."
+    "Use /yololoop. Work only on the selected YOLOLOOP_ITEM_TITLE. Keep changes scoped, run project gates, and exit nonzero if incomplete."
   ]
 }
 ```
