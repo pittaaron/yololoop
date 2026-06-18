@@ -5,9 +5,6 @@ export const CONFIG_FILE = "yololoop.config.json";
 
 export const defaultConfig = {
   version: 0,
-  models: {
-    worker: "gpt-5.4-mini"
-  },
   runtime: {
     defaultTimeoutSeconds: 900,
     sleepSeconds: 0,

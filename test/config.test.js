@@ -33,7 +33,7 @@ test("validateConfig accepts model routes", () => {
   assert.doesNotThrow(() => validateConfig({
     version: 0,
     models: {
-      worker: "gpt-5.4-mini"
+      worker: "codex-model-id"
     },
     routes: {
       chore: {

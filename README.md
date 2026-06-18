@@ -121,8 +121,8 @@ Model routes are a small convenience over command routes. They resolve model ali
 {
   "version": 0,
   "models": {
-    "worker": "gpt-5.4-mini",
-    "reviewer": "claude-opus-4-8"
+    "worker": "codex-model-id",
+    "reviewer": "claude-model-id"
   },
   "routes": {
     "chore": {
@@ -144,7 +144,7 @@ Model routes are a small convenience over command routes. They resolve model ali
 }
 ```
 
-Replace the model IDs with models available to your local `codex` or `claude` CLI account.
+Replace the placeholder model IDs with models available to your local `codex` or `claude` CLI account.
 
 When a route command runs, yololoop provides these environment variables:
 

@@ -11,6 +11,7 @@ assignees: ""
 
 ## Reproduction
 
+Please do not paste provider tokens, GitHub tokens, private model logs, `.env` files, or proprietary repository output into public issues.
 
 ## Expected Behavior
 

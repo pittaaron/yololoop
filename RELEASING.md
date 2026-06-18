@@ -11,7 +11,7 @@ This project is currently distributed from GitHub. npm publishing is intentional
    ```bash
    npm run check
    npm audit
-   npm_config_cache=/private/tmp/yololoop-npm-cache npm pack --dry-run
+   npm pack --dry-run
    gitleaks git --log-opts='--all' --redact -v --no-banner
    ```
 

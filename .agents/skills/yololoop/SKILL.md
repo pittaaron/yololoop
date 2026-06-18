@@ -34,5 +34,7 @@ Use command routes for existing tools. yololoop sets:
 - `YOLOLOOP_ITEM_SLUG`
 - `YOLOLOOP_BRANCH`
 - `YOLOLOOP_REPO`
+- `YOLOLOOP_RUN_ID`
+- `YOLOLOOP_MODEL`
 
 Keep route prompts scoped to the selected item and require the agent to run project gates before exiting.
