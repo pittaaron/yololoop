@@ -42,6 +42,8 @@ npm install -g yololoop
 
 `plan` is safe: it writes a JSON artifact under `.yololoop/plans/` and prints the side effects a live run would perform.
 
+The starter backlog item is intentionally blocked for live execution until you configure `routes.chore` in `yololoop.config.json`; this keeps a fresh repo from dispatching an agent before you choose the route and gates.
+
 ## Try It In Two Minutes
 
 The route-smoke fixture uses a local script as the agent route, so it does not require Codex, Claude, or GitHub authentication.
