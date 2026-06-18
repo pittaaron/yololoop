@@ -1,5 +1,10 @@
 # yololoop
 
+[![CI](https://github.com/pittaaron/yololoop/actions/workflows/ci.yml/badge.svg)](https://github.com/pittaaron/yololoop/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/pittaaron/yololoop?sort=semver)](https://github.com/pittaaron/yololoop/releases)
+[![License](https://img.shields.io/github/license/pittaaron/yololoop)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-339933)](package.json)
+
 Auditable local AI development loops that turn backlog items into gated, pull-request-ready changes.
 
 yololoop is not another coding model. It is a small local control loop around the tools developers already use: git, GitHub CLI, Claude Code, Codex, OpenSpec, npm, shellcheck, and plain scripts. The first release is intentionally local-first and file-backed so every action has a visible plan, durable artifact, and quality gate.
