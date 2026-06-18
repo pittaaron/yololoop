@@ -5,23 +5,26 @@
 [![License](https://img.shields.io/github/license/pittaaron/yololoop)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-339933)](package.json)
 
-Auditable local AI development loops that turn backlog items into gated, pull-request-ready changes.
+yololoop is an autonomous agent loop with brakes: every action leaves an artifact, every change goes through a gate, and live work stays local until you choose the route.
 
-yololoop is not another coding model. It is a small local control loop around the tools developers already use: git, GitHub CLI, Claude Code, Codex, OpenSpec, npm, shellcheck, and plain scripts. The first release is intentionally local-first and file-backed so every action has a visible plan, durable artifact, and quality gate.
+Most autonomous agents are optimized for speed and assume you will review later. yololoop plans first, runs one backlog item at a time, and lets your gates decide when work is done.
 
-## Status
+![Terminal demo of yololoop planning, running, gating, and writing artifacts](.github/assets/yololoop-demo.gif)
 
-This is an initial OSS core pass extracted from the local loop that runs the yololoop project itself. The public contract is intentionally small:
+## Try It In Two Minutes
 
-- `yololoop init`
-- `yololoop doctor`
-- `yololoop plan`
-- `yololoop run --once`
-- `yololoop loop --max <n>`
-- `yololoop pr --dry-run`
-- `yololoop status`
+The route-smoke fixture uses a local script as the agent route, so it does not require Codex, Claude, or GitHub authentication.
 
-Hosted runners, billing, auth, managed environments, and hosted UI are not part of this repo yet.
+```bash
+git clone https://github.com/pittaaron/yololoop.git
+cd yololoop/examples/route-smoke
+git init
+node ../../bin/yololoop.js plan --no-branch
+node ../../bin/yololoop.js run --once --no-branch
+node ../../bin/yololoop.js status
+```
+
+Expected result: the backlog item is checked off, `ROUTE_OUTPUT.md` records the selected `YOLOLOOP_*` environment values, and `.yololoop/runs/` contains a run artifact. See [the demo transcript](docs/demo-transcript.md) for the exact shape of the output.
 
 ## Quick Start
 
@@ -49,20 +52,21 @@ npm install -g yololoop
 
 The starter backlog item is intentionally blocked for live execution until you configure `routes.chore` in `yololoop.config.json`; this keeps a fresh repo from dispatching an agent before you choose the route and gates.
 
-## Try It In Two Minutes
+## Status
 
-The route-smoke fixture uses a local script as the agent route, so it does not require Codex, Claude, or GitHub authentication.
+This is an initial OSS core pass extracted from the local loop that runs the yololoop project itself. The public contract is intentionally small:
 
-```bash
-git clone https://github.com/pittaaron/yololoop.git
-cd yololoop/examples/route-smoke
-git init
-node ../../bin/yololoop.js plan --no-branch
-node ../../bin/yololoop.js run --once --no-branch
-node ../../bin/yololoop.js status
-```
+- `yololoop init`
+- `yololoop doctor`
+- `yololoop plan`
+- `yololoop run --once`
+- `yololoop loop --max <n>`
+- `yololoop pr --dry-run`
+- `yololoop status`
 
-Expected result: the backlog item is checked off, `ROUTE_OUTPUT.md` records the selected `YOLOLOOP_*` environment values, and `.yololoop/runs/` contains a run artifact. See [the demo transcript](docs/demo-transcript.md) for the exact shape of the output.
+Hosted runners, billing, auth, managed environments, and hosted UI are not part of this repo yet.
+
+## Run Live Work
 
 Run one item:
 
