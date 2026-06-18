@@ -1,6 +1,6 @@
 # Releasing
 
-This project is currently distributed from GitHub. npm publishing is intentionally deferred until the package surface has had a little more public feedback.
+This project is distributed through npm and GitHub releases.
 
 ## Release Checklist
 
@@ -28,19 +28,23 @@ This project is currently distributed from GitHub. npm publishing is intentional
      --notes-file /path/to/release-notes.md
    ```
 
-8. Smoke-test the public install:
+8. Publish to npm:
+
+   ```bash
+   npm publish --access public
+   ```
+
+9. Smoke-test the public install:
 
    ```bash
    npm_config_prefix=/tmp/yololoop-install-smoke \
-     npm install -g github:pittaaron/yololoop
+     npm install -g yololoop
    /tmp/yololoop-install-smoke/bin/yololoop --help
    ```
 
-## npm Publish Later
+## npm Hardening Later
 
-Before the first npm publish:
+After the first npm publish:
 
-- Confirm the `yololoop` package name is still available.
-- Decide whether GitHub releases stay the source of truth or npm becomes primary.
 - Add npm provenance/trusted publishing.
-- Update the README install command.
+- Decide whether releases should be cut manually or through GitHub Actions.

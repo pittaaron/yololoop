@@ -30,10 +30,10 @@ Expected result: the backlog item is checked off, `ROUTE_OUTPUT.md` records the 
 
 Prerequisite: Node.js 22 or newer.
 
-Install from GitHub until the first npm package is published:
+Install from npm:
 
 ```bash
-npm install -g github:pittaaron/yololoop
+npm install -g yololoop
 mkdir my-agent-loop
 cd my-agent-loop
 git init
@@ -42,10 +42,10 @@ yololoop doctor
 yololoop plan
 ```
 
-After the first npm release, the install command will be:
+You can also install directly from GitHub:
 
 ```bash
-npm install -g yololoop
+npm install -g github:pittaaron/yololoop
 ```
 
 `plan` is safe: it writes a JSON artifact under `.yololoop/plans/` and prints the side effects a live run would perform.

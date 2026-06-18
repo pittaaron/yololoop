@@ -1,10 +1,10 @@
 {
   "name": "yololoop",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Auditable local AI development loops that turn backlog items into gated pull-request-ready changes.",
   "type": "module",
   "bin": {
-    "yololoop": "./bin/yololoop.js"
+    "yololoop": "bin/yololoop.js"
   },
   "scripts": {
     "check": "node --check bin/yololoop.js && node --check src/*.js && node --test",

@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.3 - 2026-06-18
+
+- Prepared the package for npm distribution.
+- Updated the README install path for the public npm package.
+
 ## 0.0.2 - 2026-06-18
 
 - Removed account-specific model IDs from the generated starter config.
