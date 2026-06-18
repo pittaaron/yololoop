@@ -21,7 +21,7 @@ This is an initial OSS core pass extracted from the local loop that runs the yol
 - `yololoop pr --dry-run`
 - `yololoop status`
 
-Hosted runners, billing, auth, managed environments, and the full yololoop.com UI are not part of this repo yet.
+Hosted runners, billing, auth, managed environments, and hosted UI are not part of this repo yet.
 
 ## Quick Start
 
