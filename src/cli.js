@@ -228,6 +228,9 @@ async function printPlan(cwd, plan, flags) {
 
 function printRun(run) {
   console.log(`${run.status}: ${run.item?.title ?? "no backlog item"}`);
+  if (run.reason) {
+    console.log(`reason: ${run.reason}`);
+  }
   if (run.commit?.committed) {
     console.log(`commit: ${run.commit.sha}`);
   }

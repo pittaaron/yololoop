@@ -220,6 +220,44 @@ await new Promise((resolve) => setTimeout(resolve, 5000));
   assert.equal(run.command.status, 124);
 });
 
+test("runOnce skips an item already checked off on its existing branch", async () => {
+  const cwd = await mkdtemp(path.join(os.tmpdir(), "yololoop-skip-"));
+  await mkdir(path.join(cwd, "scripts"));
+  await writeFile(path.join(cwd, ".gitignore"), ".yololoop/\n", "utf8");
+  await writeFile(path.join(cwd, "BACKLOG.md"), "- [ ] chore: Done on branch\n- [ ] chore: Next\n", "utf8");
+  await writeFile(path.join(cwd, "yololoop.config.json"), JSON.stringify({
+    version: 0,
+    routes: {
+      chore: {
+        mode: "command",
+        command: process.execPath,
+        args: ["scripts/append-note.mjs"]
+      }
+    },
+    gates: []
+  }), "utf8");
+  await writeFile(path.join(cwd, "scripts/append-note.mjs"), `
+import { appendFile } from "node:fs/promises";
+await appendFile("NOTE.md", process.env.YOLOLOOP_ITEM_TITLE + "\\n", "utf8");
+`, "utf8");
+
+  git(cwd, ["init", "-b", "main"]);
+  git(cwd, ["config", "user.email", "test@example.com"]);
+  git(cwd, ["config", "user.name", "Yololoop Test"]);
+  git(cwd, ["add", "."]);
+  git(cwd, ["commit", "-m", "initial"]);
+
+  const first = await runOnce(cwd, { branch: true, commit: true });
+  git(cwd, ["checkout", "main"]);
+  const again = await runOnce(cwd, { branch: true, commit: true });
+  const note = git(cwd, ["show", "chore/done-on-branch:NOTE.md"]).stdout;
+
+  assert.equal(first.status, "passed");
+  assert.equal(again.status, "skipped");
+  assert.equal(again.command, null);
+  assert.equal(note, "chore: Done on branch\n");
+});
+
 function git(cwd, args) {
   const result = spawnSync("git", args, {
     cwd,

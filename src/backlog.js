@@ -4,6 +4,7 @@ import { UserError } from "./errors.js";
 
 const BACKLOG_FILE = "BACKLOG.md";
 const uncheckedPattern = /^(\s*[-*]\s+\[\s\]\s+)(.+?)\s*$/;
+const checkedPattern = /^(\s*[-*]\s+\[[xX]\]\s+)(.+?)\s*$/;
 
 export function classifyBacklogTitle(title) {
   const normalized = title.trim().toLowerCase();
@@ -57,13 +58,31 @@ export async function selectNextItem(cwd) {
   return backlog.items[0] ?? null;
 }
 
+// Finds a planned item in the backlog as it is now. The plan's line index can go stale when
+// a branch checkout or the route itself edits BACKLOG.md, so the title is the identity.
+export async function resolveItem(cwd, item) {
+  const { markdown, items } = await readBacklog(cwd);
+  const open = items.find((candidate) => candidate.lineIndex === item.lineIndex && candidate.title === item.title)
+    ?? items.find((candidate) => candidate.title === item.title);
+
+  if (open) {
+    return { status: "open", item: open };
+  }
+
+  const done = markdown.split(/\r?\n/).some((line) => line.match(checkedPattern)?.[2] === item.title);
+  return { status: done ? "done" : "missing" };
+}
+
 export async function markItemDone(cwd, item) {
   const markdown = await readText(cwd, BACKLOG_FILE);
   const lines = markdown.split(/\r?\n/);
-  const line = lines[item.lineIndex];
+  const lineIndex = locateItemLine(lines, item);
+  const line = lines[lineIndex];
 
   if (!line) {
-    throw new UserError(`cannot mark item done; line ${item.lineIndex + 1} is missing`);
+    throw new UserError(item.title === undefined
+      ? `cannot mark item done; line ${item.lineIndex + 1} is missing`
+      : `cannot mark item done; "${item.title}" is no longer in ${BACKLOG_FILE}`);
   }
 
   if (/\[[xX]\]/.test(line)) {
@@ -72,9 +91,27 @@ export async function markItemDone(cwd, item) {
 
   const nextLine = line.replace(/\[\s\]/, "[x]");
   if (nextLine === line) {
-    throw new UserError(`cannot mark item done; line ${item.lineIndex + 1} is not unchecked`);
+    throw new UserError(`cannot mark item done; line ${lineIndex + 1} is not unchecked`);
   }
 
-  lines[item.lineIndex] = nextLine;
+  lines[lineIndex] = nextLine;
   await writeText(cwd, BACKLOG_FILE, lines.join("\n"));
+}
+
+function locateItemLine(lines, item) {
+  if (item.title === undefined) {
+    return item.lineIndex;
+  }
+
+  const titleAt = (index) => (lines[index]?.match(uncheckedPattern) ?? lines[index]?.match(checkedPattern))?.[2];
+  if (titleAt(item.lineIndex) === item.title) {
+    return item.lineIndex;
+  }
+
+  const unchecked = lines.findIndex((line) => line.match(uncheckedPattern)?.[2] === item.title);
+  if (unchecked !== -1) {
+    return unchecked;
+  }
+
+  return lines.findIndex((line) => line.match(checkedPattern)?.[2] === item.title);
 }

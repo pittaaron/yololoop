@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Fixed `loop` with per-item branches re-running earlier items and skipping later ones when `origin/main` exists. New item branches now start from the commit the backlog was read from, except on `main`.
+- A run whose item is already checked off on its branch is recorded as `skipped` instead of re-running the route.
+- Backlog items are checked off by title, so lines added or removed above an item no longer check off the wrong line.
+
 ## 0.0.3 - 2026-06-18
 
 - Prepared the package for npm distribution.

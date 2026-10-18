@@ -20,18 +20,25 @@ export function checkoutBranch(cwd, branchName) {
   const current = currentBranch(cwd);
 
   if (current === branchName) {
-    return { changed: false, branchName };
+    return { changed: false, branchName, base: null };
   }
 
+  // A new branch starts from the commit whose BACKLOG.md was planned against. origin/main is
+  // only a fresher copy of that when we are on main; from any other branch (such as the
+  // previous item's branch in a loop) it would drop work the backlog already counts as done.
   let args;
+  let base = null;
   if (gitRefExists(cwd, branchName)) {
     args = ["checkout", branchName];
   } else if (gitRefExists(cwd, `origin/${branchName}`)) {
-    args = ["checkout", "-b", branchName, `origin/${branchName}`];
-  } else if (gitRefExists(cwd, "origin/main")) {
+    base = `origin/${branchName}`;
+    args = ["checkout", "-b", branchName, base];
+  } else if (current === "main" && gitRefExists(cwd, "origin/main")) {
     runGit(cwd, ["fetch", "--quiet", "origin", "main"], { allowFailure: true });
-    args = ["checkout", "-b", branchName, "origin/main"];
+    base = "origin/main";
+    args = ["checkout", "-b", branchName, base];
   } else {
+    base = current || "HEAD";
     args = ["checkout", "-b", branchName];
   }
 
@@ -44,7 +51,7 @@ export function checkoutBranch(cwd, branchName) {
     throw new UserError(`failed to checkout ${branchName}: ${result.stderr.trim() || result.stdout.trim()}`);
   }
 
-  return { changed: true, branchName };
+  return { changed: true, branchName, base };
 }
 
 export function hasChanges(cwd) {

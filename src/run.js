@@ -2,7 +2,7 @@ import { spawn } from "node:child_process";
 import path from "node:path";
 import { appendFile } from "node:fs/promises";
 import { readConfig } from "./config.js";
-import { markItemDone } from "./backlog.js";
+import { markItemDone, resolveItem } from "./backlog.js";
 import { ensureDir, writeJson } from "./fs-utils.js";
 import { createPlan } from "./plan.js";
 import { ensureGitRepo, checkoutBranch, commitAll } from "./git.js";
@@ -11,7 +11,7 @@ import { UserError } from "./errors.js";
 export async function runOnce(cwd, options = {}) {
   const createdAt = new Date().toISOString();
   const runId = runStamp(createdAt);
-  const plan = await createPlan(cwd, {
+  let plan = await createPlan(cwd, {
     branch: options.branch,
     branchName: options.branchName
   });
@@ -50,7 +50,37 @@ export async function runOnce(cwd, options = {}) {
 
   if (plan.branch.enabled) {
     ensureGitRepo(cwd);
-    checkoutBranch(cwd, plan.branch.name);
+    const checkout = checkoutBranch(cwd, plan.branch.name);
+    const resolved = await resolveItem(cwd, plan.item);
+
+    if (resolved.status === "done") {
+      return writeRun(cwd, {
+        ...baseRun(plan),
+        createdAt,
+        runId,
+        status: "skipped",
+        reason: `already checked off on ${plan.branch.name}`,
+        command: null,
+        gates: []
+      });
+    }
+
+    if (resolved.status === "missing") {
+      const from = checkout.base ? ` (created from ${checkout.base})` : "";
+      const message = `${plan.item.title} is not in BACKLOG.md on ${plan.branch.name}${from}`;
+      await writeRun(cwd, {
+        ...baseRun(plan),
+        createdAt,
+        runId,
+        status: "blocked",
+        error: message,
+        command: null,
+        gates: []
+      });
+      throw new UserError(message, 2);
+    }
+
+    plan = { ...plan, item: resolved.item };
   }
 
   const blocksPath = `.yololoop/runs/${runId}/blocks.jsonl`;

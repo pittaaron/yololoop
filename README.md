@@ -82,6 +82,8 @@ yololoop loop --max 10 --sleep 8 --max-runtime 14400 --timeout 900 --commit --br
 
 The loop stops when the backlog is empty, a route fails, a gate fails, `--max` is reached, or `--max-runtime` is reached. With `--commit`, each passed item is committed on its branch after the backlog item is checked off.
 
+Each item runs on its own branch (`<type>/<slug>`) unless you pass `--branch <name>`. Starting from `main`, a new item branch is created from `origin/main` when it exists; from any other branch it is created from the current commit. In a loop, each item's branch therefore stacks on the previous item's branch, so later items see earlier work. Pass `--branch <name>` to keep the whole loop on one branch. If an item is already checked off on its branch, the run is recorded as `skipped` and the loop moves on.
+
 Every live run writes:
 
 - `.yololoop/runs/run-*.json` for the full run artifact
