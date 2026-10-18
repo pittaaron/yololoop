@@ -193,6 +193,10 @@ git diff
 
 The demo writes `NOTES.md`, records a run artifact, and checks off the backlog item.
 
+## Self-Improving Routes With Harness²
+
+[`examples/harness2-route`](examples/harness2-route) is a route that runs each backlog item through [Harness²](https://github.com/google-research/harness2). The route tries the agent with your current `AGENTS.md` and skills, proposes edits to them, and tries again. It applies the change from the run that passed your gates, and keeps what it learned for later items. With `--adopt`, the improved harness is also committed alongside the change. The example includes a fixture you can run without model credentials.
+
 ## Assistant Skills
 
 yololoop ships Codex and Claude skill files under `.agents/skills/yololoop/` and `.claude/skills/yololoop/`. The intended assistant-facing handle is `/yololoop`: use it to preview the next item, run one gated loop step, and inspect the resulting artifacts.

@@ -1,0 +1,26 @@
+{
+  "version": 0,
+  "routes": {
+    "chore": {
+      "mode": "command",
+      "command": "python3",
+      "args": [
+        "harness2_route.py",
+        "--improver",
+        "scripted",
+        "--adopt",
+        "--",
+        "node",
+        "scripts/fake-agent.mjs"
+      ],
+      "timeoutSeconds": 600
+    }
+  },
+  "gates": [
+    {
+      "name": "notes-end-with-newline",
+      "command": "node",
+      "args": ["scripts/check-notes.mjs"]
+    }
+  ]
+}

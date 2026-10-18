@@ -22,3 +22,24 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+
+  harness2-route:
+    runs-on: ubuntu-latest
+    env:
+      HARNESS2_COMMIT: 1cfe254e8d25b15f37048c3730134686abe60335
+    steps:
+      - uses: actions/checkout@v6.0.3
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: "22"
+      - name: Fetch Harness² at the tested commit
+        run: |
+          git init -q "$RUNNER_TEMP/harness2"
+          git -C "$RUNNER_TEMP/harness2" fetch -q --depth 1 https://github.com/google-research/harness2 "$HARNESS2_COMMIT"
+          git -C "$RUNNER_TEMP/harness2" checkout -q FETCH_HEAD
+      - run: python3 --version
+      - run: python3 -m unittest discover -s examples/harness2-route -v
+        env:
+          PYTHONPATH: ${{ runner.temp }}/harness2
