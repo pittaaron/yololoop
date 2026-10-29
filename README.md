@@ -50,7 +50,7 @@ npm install -g github:pittaaron/yololoop
 
 `plan` is safe: it writes a JSON artifact under `.yololoop/plans/` and prints the side effects a live run would perform.
 
-The starter backlog item is intentionally blocked for live execution until you configure `routes.chore` in `yololoop.config.json`; this keeps a fresh repo from dispatching an agent before you choose the route and gates.
+The starter backlog item is intentionally blocked for live execution until you configure `routes.chore` and at least one gate in `yololoop.config.json`; this keeps a fresh repo from dispatching an agent before you choose the route and gates.
 
 ## Status
 
@@ -83,6 +83,15 @@ yololoop loop --max 10 --sleep 8 --max-runtime 14400 --timeout 900 --commit --br
 The loop stops when the backlog is empty, a route fails, a gate fails, `--max` is reached, or `--max-runtime` is reached. With `--commit`, each passed item is committed on its branch after the backlog item is checked off.
 
 Each item runs on its own branch (`<type>/<slug>`) unless you pass `--branch <name>`. Starting from `main`, a new item branch is created from `origin/main` when it exists; from any other branch it is created from the current commit. In a loop, each item's branch therefore stacks on the previous item's branch, so later items see earlier work. Pass `--branch <name>` to keep the whole loop on one branch. If an item is already checked off on its branch, the run is recorded as `skipped` and the loop moves on.
+
+Live runs refuse to start when:
+
+- No gates are configured. Agents exit 0 whether or not they finished, so gates are the only check that an item is done. Pass `--allow-no-gates` to run without them anyway.
+- `--commit` is set and the working tree has uncommitted changes outside `.yololoop/`. `--commit` stages everything, so those changes would land in the item's commit. Commit or stash them first.
+
+A blocked run exits with status 2 and records why in its run artifact. `yololoop plan` shows the same reason before anything runs.
+
+Each route and gate runs in its own process group. When it times out, when it exits and leaves background processes behind, or when yololoop is stopped with Ctrl+C, SIGTERM or SIGHUP, every process it started is stopped too, and an interrupted run is recorded as failed.
 
 Every live run writes:
 

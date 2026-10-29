@@ -31,7 +31,7 @@ import { appendFile } from "node:fs/promises";
 await appendFile("NOTE.md", process.env.YOLOLOOP_ITEM_TITLE + "\\n", "utf8");
 `, "utf8");
 
-  const result = await runLoop(cwd, { max: 2, branch: false, commit: false });
+  const result = await runLoop(cwd, { max: 2, branch: false, commit: false, allowNoGates: true });
   const backlog = await readFile(path.join(cwd, "BACKLOG.md"), "utf8");
   const note = await readFile(path.join(cwd, "NOTE.md"), "utf8");
 
@@ -80,7 +80,7 @@ await appendFile("NOTE.md", process.env.YOLOLOOP_ITEM_TITLE + "\\n", "utf8");
   git(cwd, ["remote", "add", "origin", origin]);
   git(cwd, ["push", "-u", "origin", "main"]);
 
-  const result = await runLoop(cwd, { max: 3, branch: true, commit: true });
+  const result = await runLoop(cwd, { max: 3, branch: true, commit: true, allowNoGates: true });
   const note = git(cwd, ["show", "chore/third:NOTE.md"]).stdout;
   const backlog = git(cwd, ["show", "chore/third:BACKLOG.md"]).stdout;
 

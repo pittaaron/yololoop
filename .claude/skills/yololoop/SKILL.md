@@ -23,6 +23,7 @@ Use this skill when the user asks Claude Code to operate or configure yololoop i
 - Keep `.yololoop/` generated and gitignored.
 - Do not edit unrelated backlog items.
 - Do not mark work complete when gates failed.
+- Do not pass `--allow-no-gates` unless the user explicitly asks for an unverified run.
 - Keep each live run scoped to one backlog item.
 
 ## Route Worker Behavior

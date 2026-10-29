@@ -22,6 +22,7 @@ Use this skill when the user asks to operate or configure yololoop in the curren
 - Never place API keys, tokens, session files, or model logs in committed files.
 - Treat `.yololoop/` as generated local runtime state.
 - Do not bypass configured gates to mark a backlog item complete.
+- Do not pass `--allow-no-gates` unless the user explicitly asks for an unverified run.
 - Keep live runs to one selected backlog item at a time.
 - Prefer `yololoop plan` for investigation and demos.
 

@@ -13,9 +13,9 @@ const helpText = `yololoop
 Usage:
   yololoop init [--force] [--cwd <path>]
   yololoop doctor [--cwd <path>]
-  yololoop plan [--json] [--branch <name>] [--no-branch] [--cwd <path>]
-  yololoop run --once [--commit] [--timeout <seconds>] [--branch <name>] [--no-branch] [--cwd <path>]
-  yololoop loop [--max <n>] [--sleep <seconds>] [--max-runtime <seconds>] [--timeout <seconds>] [--commit] [--branch <name>] [--no-branch] [--cwd <path>]
+  yololoop plan [--json] [--branch <name>] [--no-branch] [--allow-no-gates] [--cwd <path>]
+  yololoop run --once [--commit] [--timeout <seconds>] [--branch <name>] [--no-branch] [--allow-no-gates] [--cwd <path>]
+  yololoop loop [--max <n>] [--sleep <seconds>] [--max-runtime <seconds>] [--timeout <seconds>] [--commit] [--branch <name>] [--no-branch] [--allow-no-gates] [--cwd <path>]
   yololoop pr [--dry-run] [--draft] [--base <branch>] [--cwd <path>]
   yololoop status [--json] [--cwd <path>]
 
@@ -45,7 +45,8 @@ export async function main(argv) {
     case "plan":
       return printPlan(cwd, await createPlan(cwd, {
         branch: !flags.noBranch,
-        branchName: flags.branchName
+        branchName: flags.branchName,
+        allowNoGates: flags.allowNoGates
       }), flags);
     case "run":
       if (!flags.once) {
@@ -56,6 +57,7 @@ export async function main(argv) {
         branchName: flags.branchName,
         commit: flags.commit,
         timeoutSeconds: flags.timeoutSeconds,
+        allowNoGates: flags.allowNoGates,
         stream: true
       }));
     case "loop":
@@ -67,6 +69,7 @@ export async function main(argv) {
         branch: !flags.noBranch,
         branchName: flags.branchName,
         commit: flags.commit,
+        allowNoGates: flags.allowNoGates,
         stream: true
       }));
     case "pr":
@@ -92,6 +95,7 @@ function parseArgs(argv) {
     dryRun: false,
     draft: false,
     commit: false,
+    allowNoGates: false,
     base: "main",
     max: 1,
     sleepSeconds: undefined,
@@ -120,6 +124,8 @@ function parseArgs(argv) {
       flags.draft = true;
     } else if (arg === "--commit") {
       flags.commit = true;
+    } else if (arg === "--allow-no-gates") {
+      flags.allowNoGates = true;
     } else if (arg === "--base") {
       const value = argv[index + 1];
       if (!value) {

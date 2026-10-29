@@ -20,11 +20,13 @@ export async function createPlan(cwd, options = {}) {
   const route = config.routes[item.type] ?? config.routes.chore;
   const branchName = options.branchName ?? `${item.type}/${item.slug}`;
   const branchEnabled = options.branch !== false;
+  const blockedReason = blockReason(route, item, config, options);
 
   return {
     version: 0,
     createdAt,
-    status: route.mode === "manual" ? "blocked" : "ready",
+    status: blockedReason ? "blocked" : "ready",
+    ...(blockedReason ? { blockedReason } : {}),
     item,
     route: redactRoute(route),
     branch: {
@@ -38,8 +40,8 @@ export async function createPlan(cwd, options = {}) {
     })),
     actions: [
       ...(branchEnabled ? [`create or reuse branch ${branchName}`] : []),
-      route.mode === "manual"
-        ? `stop: ${route.message ?? "route is manual"}`
+      blockedReason
+        ? `stop: ${blockedReason}`
         : `run command route for ${item.type}`,
       "run configured gates",
       "mark backlog item complete after successful route and gates",
@@ -54,6 +56,20 @@ export async function writePlan(cwd, plan) {
   const relativePath = `.yololoop/plans/plan-${stamp}.json`;
   await writeJson(cwd, relativePath, plan);
   return relativePath;
+}
+
+// Gates are the only check that an item is done: agents exit 0 whether or not they finished,
+// so a live run without gates would mark every item complete.
+function blockReason(route, item, config, options) {
+  if (route.mode === "manual") {
+    return route.message ?? `route ${item.type} is manual`;
+  }
+
+  if (config.gates.length === 0 && !options.allowNoGates) {
+    return "no gates configured; add a gate to yololoop.config.json that proves the item is done, or pass --allow-no-gates";
+  }
+
+  return null;
 }
 
 function redactRoute(route) {

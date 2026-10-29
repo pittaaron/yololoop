@@ -58,6 +58,14 @@ export function hasChanges(cwd) {
   return runGit(cwd, ["status", "--porcelain"]).stdout.trim().length > 0;
 }
 
+// Paths with uncommitted changes anywhere in the repository, ignoring yololoop's own state.
+export function uncommittedChanges(cwd) {
+  return runGit(cwd, ["status", "--porcelain", "--untracked-files=all", "--", ":/", ":(exclude).yololoop"]).stdout
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => line.slice(3));
+}
+
 export function commitAll(cwd, message) {
   if (!hasChanges(cwd)) {
     return { committed: false, sha: null };

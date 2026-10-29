@@ -50,6 +50,7 @@ Use this skill when the user asks to operate or configure yololoop in the curren
 - Never place API keys, tokens, session files, or model logs in committed files.
 - Treat \`.yololoop/\` as generated local runtime state.
 - Do not bypass configured gates to mark a backlog item complete.
+- Do not pass \`--allow-no-gates\` unless the user explicitly asks for an unverified run.
 - Keep live runs to one selected backlog item at a time.
 - Prefer \`yololoop plan\` for investigation and demos.
 
@@ -92,6 +93,7 @@ Use this skill when the user asks Claude Code to operate or configure yololoop i
 - Keep \`.yololoop/\` generated and gitignored.
 - Do not edit unrelated backlog items.
 - Do not mark work complete when gates failed.
+- Do not pass \`--allow-no-gates\` unless the user explicitly asks for an unverified run.
 - Keep each live run scoped to one backlog item.
 
 ## Route Worker Behavior

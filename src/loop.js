@@ -26,6 +26,7 @@ export async function runLoop(cwd, options = {}) {
         branchName: options.branchName,
         commit: options.commit,
         timeoutSeconds: options.timeoutSeconds,
+        allowNoGates: options.allowNoGates,
         stream: options.stream
       });
     } catch (error) {

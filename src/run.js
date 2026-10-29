@@ -1,19 +1,24 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
+import os from "node:os";
 import path from "node:path";
 import { appendFile } from "node:fs/promises";
 import { readConfig } from "./config.js";
 import { markItemDone, resolveItem } from "./backlog.js";
 import { ensureDir, writeJson } from "./fs-utils.js";
 import { createPlan } from "./plan.js";
-import { ensureGitRepo, checkoutBranch, commitAll } from "./git.js";
+import { ensureGitRepo, checkoutBranch, commitAll, uncommittedChanges } from "./git.js";
 import { UserError } from "./errors.js";
+
+const STOP_SIGNALS = ["SIGINT", "SIGTERM", "SIGHUP"];
+let interruptedBy = null;
 
 export async function runOnce(cwd, options = {}) {
   const createdAt = new Date().toISOString();
   const runId = runStamp(createdAt);
   let plan = await createPlan(cwd, {
     branch: options.branch,
-    branchName: options.branchName
+    branchName: options.branchName,
+    allowNoGates: options.allowNoGates
   });
 
   if (plan.status === "empty") {
@@ -34,8 +39,7 @@ export async function runOnce(cwd, options = {}) {
     defaultTimeoutSeconds: options.timeoutSeconds ?? config.runtime?.defaultTimeoutSeconds ?? envInteger("YOLOLOOP_TURN_TIMEOUT", 900)
   };
 
-  if (route.mode === "manual") {
-    const message = route.message ?? `route ${plan.item.type} is manual`;
+  const block = async (message) => {
     await writeRun(cwd, {
       ...baseRun(plan),
       createdAt,
@@ -46,10 +50,22 @@ export async function runOnce(cwd, options = {}) {
       gates: []
     });
     throw new UserError(message, 2);
+  };
+
+  if (plan.status === "blocked") {
+    await block(plan.blockedReason);
   }
 
   if (plan.branch.enabled) {
     ensureGitRepo(cwd);
+
+    // --commit stages everything, so anything already uncommitted would land in this item's commit.
+    const dirty = options.commit ? uncommittedChanges(cwd) : [];
+    if (dirty.length > 0) {
+      const shown = dirty.slice(0, 5).join(", ") + (dirty.length > 5 ? `, and ${dirty.length - 5} more` : "");
+      await block(`working tree has uncommitted changes (${shown}); commit or stash them before running with --commit`);
+    }
+
     const checkout = checkoutBranch(cwd, plan.branch.name);
     const resolved = await resolveItem(cwd, plan.item);
 
@@ -67,17 +83,7 @@ export async function runOnce(cwd, options = {}) {
 
     if (resolved.status === "missing") {
       const from = checkout.base ? ` (created from ${checkout.base})` : "";
-      const message = `${plan.item.title} is not in BACKLOG.md on ${plan.branch.name}${from}`;
-      await writeRun(cwd, {
-        ...baseRun(plan),
-        createdAt,
-        runId,
-        status: "blocked",
-        error: message,
-        command: null,
-        gates: []
-      });
-      throw new UserError(message, 2);
+      await block(`${plan.item.title} is not in BACKLOG.md on ${plan.branch.name}${from}`);
     }
 
     plan = { ...plan, item: resolved.item };
@@ -292,7 +298,6 @@ function spawnCommand(command, args, options) {
   return new Promise((resolve) => {
     let stdout = "";
     let stderr = "";
-    let settled = false;
     let timedOut = false;
     let child;
 
@@ -301,7 +306,9 @@ function spawnCommand(command, args, options) {
         cwd: options.cwd,
         env: options.env,
         shell: false,
-        stdio: ["ignore", "pipe", "pipe"]
+        stdio: ["ignore", "pipe", "pipe"],
+        // Its own process group, so stopping it also stops everything it started.
+        detached: process.platform !== "win32"
       });
     } catch (error) {
       resolve({
@@ -315,16 +322,43 @@ function spawnCommand(command, args, options) {
       return;
     }
 
+    const stopTree = () => {
+      killTree(child, "SIGTERM");
+      setTimeout(() => killTree(child, "SIGKILL"), 1000).unref();
+    };
+
     const timeout = setTimeout(() => {
       timedOut = true;
-      child.kill("SIGTERM");
-      setTimeout(() => {
-        if (!settled) {
-          child.kill("SIGKILL");
-        }
-      }, 1000).unref();
+      stopTree();
     }, options.timeoutSeconds * 1000);
     timeout.unref();
+
+    // A separate process group no longer gets the terminal's Ctrl+C, so pass stop signals on.
+    const forwardStop = (signal) => {
+      interruptedBy = signal;
+      removeStopListeners();
+      killTree(child, signal);
+      setTimeout(() => {
+        killTree(child, "SIGKILL");
+        process.exit(128 + os.constants.signals[signal]);
+      }, 1000);
+    };
+    const removeStopListeners = () => {
+      for (const signal of STOP_SIGNALS) {
+        process.off(signal, forwardStop);
+      }
+    };
+    for (const signal of STOP_SIGNALS) {
+      process.on(signal, forwardStop);
+    }
+
+    // Anything the command left running in the background could keep editing the repo
+    // while gates run or the commit is made.
+    child.on("exit", () => {
+      if (!timedOut && process.platform !== "win32") {
+        stopTree();
+      }
+    });
 
     child.stdout.on("data", (chunk) => {
       const text = chunk.toString();
@@ -347,18 +381,39 @@ function spawnCommand(command, args, options) {
     });
 
     child.on("close", (status, signal) => {
-      settled = true;
       clearTimeout(timeout);
+      removeStopListeners();
+      // An interrupted command never counts as passed, even if it caught the signal and exited 0.
       resolve({
-        status: timedOut ? 124 : status,
+        status: interruptedBy ? 128 + os.constants.signals[interruptedBy] : timedOut ? 124 : status,
         signal,
         stdout,
         stderr,
         timedOut,
-        error: timedOut ? `command timed out after ${options.timeoutSeconds}s` : undefined
+        error: interruptedBy
+          ? `interrupted by ${interruptedBy}`
+          : timedOut ? `command timed out after ${options.timeoutSeconds}s` : undefined
       });
     });
   });
+}
+
+// Signals every process the command started, not just the command itself.
+function killTree(child, signal) {
+  if (!child.pid) {
+    return;
+  }
+
+  if (process.platform === "win32") {
+    spawnSync("taskkill", ["/pid", String(child.pid), "/T", "/F"], { stdio: "ignore" });
+    return;
+  }
+
+  try {
+    process.kill(-child.pid, signal);
+  } catch {
+    // The process group has already exited.
+  }
 }
 
 async function appendBlock(cwd, relativePath, block) {
